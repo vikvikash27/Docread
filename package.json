@@ -9,10 +9,12 @@
   "dependencies": {
     "firebase": "^11.10.0",
     "multer": "^2.0.1",
-    "next": "^15.3.5",
     "next-connect": "^1.0.0",
     "pdfjs-dist": "^5.3.93",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "next": "^15.3.5"
   }
 }
