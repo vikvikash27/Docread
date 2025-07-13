@@ -2,105 +2,124 @@
 
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { auth, setupRecaptcha, signInWithPhoneNumber } from "../lib/firebase";
+import Link from "next/link";
 
-export default function LoginPage() {
-  const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
+export default function IndexPage() {
   const [name, setName] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [contact, setContact] = useState("");
+  const [isEmail, setIsEmail] = useState(false);
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const sendOtp = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
 
-    if (!phone) return alert("Enter your phone number");
-
-    try {
-      const appVerifier = setupRecaptcha("recaptcha-container");
-      const result = await signInWithPhoneNumber(
-        auth,
-        "+91" + phone,
-        appVerifier
-      );
-      setConfirmationResult(result);
-      setOtpSent(true);
-    } catch (error) {
-      alert("Error sending OTP: " + error.message);
+    if (!name || !contact || !password) {
+      alert("Please fill all fields");
+      return;
     }
-  };
 
-  const verifyOtp = async (e) => {
-    e.preventDefault();
+    const user = {
+      name,
+      email: isEmail ? contact : "",
+      phone: !isEmail ? contact : "",
+      password,
+    };
 
-    if (!otp || !name) return alert("Enter OTP and your name");
-
-    try {
-      await confirmationResult.confirm(otp);
-      localStorage.setItem("user", JSON.stringify({ name, phone }));
-      router.push("/dashboard");
-    } catch (error) {
-      alert("Invalid OTP");
-    }
+    localStorage.setItem("user", JSON.stringify(user));
+    alert("✅ Profile created!");
+    router.push("/dashboard");
   };
 
   return (
-    <div className="login-container">
-      <h1>📘 RouteReader Login</h1>
+    <div className="container">
+      <h1 className="title">📘 Create Your Profile</h1>
 
-      {!otpSent ? (
-        <form onSubmit={sendOtp}>
-          <input
-            type="tel"
-            placeholder="Enter phone number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
-          <div id="recaptcha-container"></div>
-          <button type="submit">Send OTP</button>
-        </form>
-      ) : (
-        <form onSubmit={verifyOtp}>
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <button type="submit">Verify OTP & Login</button>
-        </form>
-      )}
+      <form onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="Your Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+
+        <div className="switcher">
+          <label>
+            <input
+              type="radio"
+              name="contactMode"
+              checked={!isEmail}
+              onChange={() => setIsEmail(false)}
+            />
+            Use Phone
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="contactMode"
+              checked={isEmail}
+              onChange={() => setIsEmail(true)}
+            />
+            Use Email
+          </label>
+        </div>
+
+        <input
+          type={isEmail ? "email" : "tel"}
+          placeholder={isEmail ? "Email Address" : "Phone Number"}
+          value={contact}
+          onChange={(e) => setContact(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Create Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button type="submit">Create Profile</button>
+      </form>
+      <div className="text-center mt-8 pt-6 border-t">
+        <span>Already have an account? </span>
+        <Link href="/login">
+          <span className="text-blue-600 hover:underline">Login here</span>
+        </Link>
+      </div>
 
       <style jsx>{`
-        .login-container {
+        .container {
           max-width: 400px;
           margin: 100px auto;
-          padding: 20px;
-          text-align: center;
+          padding: 30px;
           background: #f9f9f9;
-          border-radius: 8px;
-          box-shadow: 0 0 10px #ddd;
+          border-radius: 10px;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+          text-align: center;
         }
 
-        input {
+        .title {
+          margin-bottom: 20px;
+        }
+
+        form input {
           width: 100%;
           padding: 10px;
           margin: 10px 0;
-          border-radius: 5px;
           border: 1px solid #ccc;
+          border-radius: 5px;
         }
 
-        button {
+        .switcher {
+          display: flex;
+          justify-content: space-around;
+          margin: 10px 0;
+        }
+
+        form button {
           width: 100%;
           padding: 10px;
           background: #1976d2;
@@ -110,7 +129,7 @@ export default function LoginPage() {
           cursor: pointer;
         }
 
-        button:hover {
+        form button:hover {
           background: #125ea6;
         }
       `}</style>
